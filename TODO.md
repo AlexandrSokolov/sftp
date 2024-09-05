@@ -1,5 +1,3 @@
-- iterate and read files, if needed
-- add predicate to avoid files reading, we do not need
 - iterate within root and its subfolders (with maxDepth) (display even empty folders)
 - moving files within sftp to new not existing folders
 - files removal
@@ -68,3 +66,21 @@ https://github.com/testcontainers/testcontainers-java/blob/main/examples/sftp/sr
 
 ### https://stackoverflow.com/questions/68459632/how-to-use-atmoz-sftp
 https://github.com/atmoz/sftp
+
+### what is it SftpProgressMonitor
+
+public void put(String src, String dst, SftpProgressMonitor monitor)
+
+### spring provides its own sftp integration solution!
+
+### sftp server logging
+
+[Logging SFTP operations](https://github.com/atmoz/sftp/issues/86)
+
+# Enable this for more logs
+#LogLevel VERBOSE
+https://github.com/atmoz/sftp/blob/master/files/sshd_config
+
+### another option to install sftp on docker
+
+[Easy to use SFTP server from atmoz/sftp](https://hub.docker.com/r/atmoz/sftp/dockerfile)

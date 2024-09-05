@@ -17,10 +17,20 @@ public class TestSftpContainer {
   public static final String SFTP_LOGIN = "foo";
   public static final String SFTP_PASSWORD = "pass";
   public static final String SFTP_HOME_PATH = "/upload";
+  public static final String WRITE_PERMISSION_FOLDER = "/testcontainers";
+  public static final String NEW_FOLDER_PATH = "/f1/f2/f3";
+  public static final String FOLDER_2_MOVE = SFTP_HOME_PATH + WRITE_PERMISSION_FOLDER + "/folder1";
+  public static final String FOLDER_2_MOVE_NEW_PATH = SFTP_HOME_PATH + WRITE_PERMISSION_FOLDER + "/folder2/folderMoved";
+  public static final String FILE_NAME = "file.txt";
+  public static final String FILE_NAME_4_UPLOADING = "file2upload.txt";
+  public static final String FILE_NAME_4_MOVING = "file2move.txt";
+  public static final String NEW_FILE_NAME = "file_new.txt";
   public static final int SFTP_PORT = 22;
 
   @Container
   public static GenericContainer<?> sftp = new GenericContainer<>("atmoz/sftp:alpine-3.7")
+    //the users can't create new files directly under their own home directory!
+    //we can create only in `/upload/testcontainers` on sftp
     //copy `testcontainers` folder from classpath resource into `/home/foo/upload/testcontainers` on sftp
     .withCopyFileToContainer(
       MountableFile.forClasspathResource("testcontainers/", 0777),

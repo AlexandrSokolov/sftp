@@ -52,13 +52,6 @@
       <artifactId>jsch</artifactId>
       <version>${mwiede.jsch.version}</version>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>${apache.commons-io.version}</version>
-    </dependency>
-
 
     <!-- https://mvnrepository.com/artifact/org.testcontainers/junit-jupiter -->
     <dependency>
