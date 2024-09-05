@@ -18,6 +18,7 @@ An alternative approach to work with sftp is to mount sftp to the local folder a
 
 - [Official documentation of `atmoz/sftp` docker image](https://github.com/atmoz/sftp)
 - [sftp container configuration, see `TestSftpContainer`](src/test/java/com/example/sftp/TestSftpContainer.java)
+- [Sftp codes](https://winscp.net/eng/docs/sftp_codes)
 
 Examples:
 - [Efficient SFTP Testing with JSch, Kotlin, Testcontainers, and Spring Boot Native](https://medium.com/whozapp/sftp-test-implem-of-jsch-with-kotlin-testcontainers-and-spring-boot-native-537f624da895)
@@ -141,6 +142,11 @@ For these commands you know in advance the exact sftp path of the file/directory
          sftpApi.mvFile(originalFilePath, newFilePath);
        }
      }
+   ```
+   - [Sftp file moving not working, but file renaming works](https://stackoverflow.com/questions/78951835/sftp-file-moving-not-working-but-file-renaming-works)
+   - [Alternative approach use `mv` command:](https://stackoverflow.com/questions/60094176/rename-command-not-working-when-using-jsch)
+   ```java
+   sftpChannel.setCommand("rename dir1 dir2");
    ```
 9. Move directory
    ```java
