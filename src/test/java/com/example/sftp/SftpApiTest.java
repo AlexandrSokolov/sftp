@@ -61,13 +61,14 @@ public class SftpApiTest {
         Map::putAll);
       Assertions.assertEquals(4, result.size());
       Assertions.assertTrue(result.get(SFTP_HOME_PATH).isEmpty());
-      Assertions.assertEquals(2, result.get(TEST_CONTAINERS_FOLDER).size());
+      Assertions.assertEquals(4, result.get(TEST_CONTAINERS_FOLDER).size());
 
       try(InputStream inputStream = sftpApi.fileDownload(
-        TEST_CONTAINERS_FOLDER + "/" + result.get(TEST_CONTAINERS_FOLDER)
-          .getFirst())) {
+        TEST_CONTAINERS_FOLDER + "/" + result.get(TEST_CONTAINERS_FOLDER).stream()
+          .max(String::compareTo)
+          .orElseThrow(IllegalStateException::new))) {
         Assertions.assertEquals(
-          "file 2 move",
+          "file 2 move 3",
           new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
       } catch (IOException e) {
         throw new IllegalStateException(e);
@@ -180,10 +181,23 @@ public class SftpApiTest {
   }
 
   @Test
-  public void testMoveFile() {
-    var originalFilePath = String.format("%s/%s", TEST_CONTAINERS_FOLDER, FILE_NAME_4_MOVING);
-    //var newFilePath = String.format("%s/%s", TEST_CONTAINERS_FOLDER, "moved_" + FILE_NAME_4_MOVING);
-    var newFilePath = String.format("%s%s", TEST_CONTAINERS_FOLDER, "/new/path/moved.txt");
+  public void testMoveFileWithinTheSameFolder() {
+    var originalFilePath = TEST_CONTAINERS_FOLDER + "/" + FILE_NAME_4_MOVING_1;
+    var newFilePath = TEST_CONTAINERS_FOLDER + "/moved_" + FILE_NAME_4_MOVING_1;
+    try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
+      Assertions.assertFalse(sftpApi.fileExists(newFilePath));
+
+      sftpApi.mvFile(originalFilePath, newFilePath);
+      Assertions.assertTrue(sftpApi.fileExists(newFilePath));
+      Assertions.assertFalse(sftpApi.fileExists(originalFilePath));
+    }
+  }
+
+  @Test
+  public void testMoveFile2ExistingFolder() {
+    var originalFilePath = TEST_CONTAINERS_FOLDER + "/" + FILE_NAME_4_MOVING_2;
+    // `/upload/testcontainers/folder1` preexisting folder
+    var newFilePath = TEST_CONTAINERS_FOLDER + "/folder2/moved_" + FILE_NAME_4_MOVING_2;
     try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
       Assertions.assertFalse(sftpApi.fileExists(newFilePath));
 
@@ -196,6 +210,19 @@ public class SftpApiTest {
   /**
    * See <a href="https://stackoverflow.com/questions/78951835/sftp-file-moving-not-working-but-file-renaming-works">...</a>
    */
+  @Test
+  public void testMoveFile2NotExistingFolder() {
+    var originalFilePath = TEST_CONTAINERS_FOLDER + "/" + FILE_NAME_4_MOVING_3;
+    var newFilePath = TEST_CONTAINERS_FOLDER + "/new/path/moved.txt";
+    try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
+      Assertions.assertFalse(sftpApi.fileExists(newFilePath));
+
+      sftpApi.mvFile(originalFilePath, newFilePath);
+      Assertions.assertTrue(sftpApi.fileExists(newFilePath));
+      Assertions.assertFalse(sftpApi.fileExists(originalFilePath));
+    }
+  }
+
   @Test
   public void testMoveDir() {
     try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {

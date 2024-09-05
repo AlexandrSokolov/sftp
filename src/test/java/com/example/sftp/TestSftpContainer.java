@@ -23,7 +23,9 @@ public class TestSftpContainer {
   public static final String FOLDER_2_MOVE_NEW_PATH = TEST_CONTAINERS_FOLDER + "/folder2/folderMoved";
   public static final String FILE_NAME = "file.txt";
   public static final String FILE_NAME_4_UPLOADING = "file2upload.txt";
-  public static final String FILE_NAME_4_MOVING = "file2move.txt";
+  public static final String FILE_NAME_4_MOVING_1 = "file2move_1.txt";
+  public static final String FILE_NAME_4_MOVING_2 = "file2move_2.txt";
+  public static final String FILE_NAME_4_MOVING_3 = "file2move_3.txt";
   public static final String NEW_FILE_NAME = "file_new.txt";
   public static final int SFTP_PORT = 22;
 
