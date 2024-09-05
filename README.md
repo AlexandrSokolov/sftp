@@ -179,11 +179,6 @@ For these commands you know in advance the exact sftp path of the file/directory
        }
      }
    ```
-   - [Sftp file moving not working, but file renaming works](https://stackoverflow.com/questions/78951835/sftp-file-moving-not-working-but-file-renaming-works)
-   - [Alternative approach use `mv` command:](https://stackoverflow.com/questions/60094176/rename-command-not-working-when-using-jsch)
-   ```java
-   sftpChannel.setCommand("rename dir1 dir2");
-   ```
 9. Move directory
    ```java
      @Test
@@ -197,9 +192,27 @@ For these commands you know in advance the exact sftp path of the file/directory
 
     Use `SftpService` instead of `SftpApi`. It is hidden by purpose from the interface. 
     It is supposed to used in exceptional situations, when there are no helper methods, defined in `SftpApi`. 
-```java
-
-```
+   ```java
+     @Test
+     public void testChannelSftpAccess() {
+       try (SftpService sftpService = (SftpService) SftpService.instance(sftpConfiguration)) {
+         //do not close `sftpChannel`, channel will be closed by SftpService.close()
+         var sftpChannel = sftpService.sftpChannel();
+       }
+     }
+   ```
+11. Set permissions:
+   ```java
+     @Test
+     public void testSetPermissions() throws SftpException {
+       try (SftpService sftpService = (SftpService) SftpService.instance(sftpConfiguration)) {
+         //do not close `sftpChannel`, channel will be closed by SftpService.close()
+         var sftpChannel = sftpService.sftpChannel();
+         //(octal) 0666 = 6*8^2 + 6*8 + 6 = 438 (decimal)
+         sftpChannel.chmod(Integer.parseInt("666",8), FOLDER_2);
+       }
+     }
+   ```
 
 ### Ssh auth logging for sftp
 

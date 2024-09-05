@@ -1,5 +1,7 @@
 package com.example.sftp;
 
+import com.jcraft.jsch.SftpATTRS;
+import com.jcraft.jsch.SftpException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
@@ -16,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.example.sftp.TestSftpContainer.*;
 
@@ -207,9 +210,6 @@ public class SftpApiTest {
     }
   }
 
-  /**
-   * See <a href="https://stackoverflow.com/questions/78951835/sftp-file-moving-not-working-but-file-renaming-works">...</a>
-   */
   @Test
   public void testMoveFile2NotExistingFolder() {
     var originalFilePath = TEST_CONTAINERS_FOLDER + "/" + FILE_NAME_4_MOVING_3;
@@ -241,8 +241,28 @@ public class SftpApiTest {
   }
 
   @Test
+  public void testSetPermissions() throws SftpException {
+    try (SftpService sftpService = (SftpService) SftpService.instance(sftpConfiguration)) {
+      //do not close `sftpChannel`, channel will be closed by SftpService.close()
+      var sftpChannel = sftpService.sftpChannel();
+      var originalPermissions = Optional.ofNullable(sftpChannel.stat(FOLDER_2))
+        .map(SftpATTRS::getPermissionsString)
+        .orElseThrow(() -> new IllegalStateException("Could not get stat for " + FOLDER_2));
+      Assertions.assertEquals("drwxrwxrwx", originalPermissions);
+      //(octal) 0666 = 6*8^2 + 6*8 + 6 = 438 (decimal)
+      sftpChannel.chmod(Integer.parseInt("666",8), FOLDER_2);
+
+      var updatedPermissions = Optional.ofNullable(sftpChannel.stat(FOLDER_2))
+        .map(SftpATTRS::getPermissionsString)
+        .orElseThrow(() -> new IllegalStateException("Could not get stat for " + FOLDER_2));
+      Assertions.assertEquals("drw-rw-rw-", updatedPermissions);
+    }
+  }
+
+  @Test
   public void testChannelSftpAccess() {
     try (SftpService sftpService = (SftpService) SftpService.instance(sftpConfiguration)) {
+      //do not close `sftpChannel`, channel will be closed by SftpService.close()
       var sftpChannel = sftpService.sftpChannel();
       Assertions.assertNotNull(sftpChannel);
       Assertions.assertTrue(sftpChannel.isConnected());

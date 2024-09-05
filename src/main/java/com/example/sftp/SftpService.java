@@ -172,18 +172,7 @@ public class SftpService implements SftpApi {
       var destinationFolder = "/" + String.join("/",
         destinationPathAsList.subList(0, destinationPathAsList.size() - 1));
       if (!dirExists(destinationFolder)) {
-        mkdir(destinationPath);
-        //(octal) 0777 = 7*8^2 + 7*8 + 7 = 511 (decimal)
-        sftpChannel.chmod(Integer.parseInt("777",8), destinationFolder);
-      }
-      var currentPermissions = Optional.ofNullable(sftpChannel.stat(destinationFolder))
-        .map(SftpATTRS::getPermissionsString)
-        .orElseThrow(() -> new IllegalStateException("Could not get stat for " + destinationFolder));
-      if (!WRITABLE_PERMISSIONS_STR.equals(currentPermissions)) {
-        throw new IllegalStateException(
-          "The destination folder = `" + destinationFolder + "` has not enough permissions to move file into that folder."
-            + "Current permissions: '" +  currentPermissions + "'."
-            + "Expected permissions: " + WRITABLE_PERMISSIONS_STR);
+        mkdir(destinationFolder);
       }
       sftpChannel.rename(sourcePath, destinationPath);
     } catch (SftpException e) {

@@ -20,6 +20,7 @@ public class TestSftpContainer {
   public static final String TEST_CONTAINERS_FOLDER = SFTP_HOME_PATH + "/testcontainers";
   public static final String NEW_FOLDER_PATH = "/f1/f2/f3";
   public static final String FOLDER_2_MOVE = TEST_CONTAINERS_FOLDER + "/folder1";
+  public static final String FOLDER_2 = TEST_CONTAINERS_FOLDER + "/folder2";
   public static final String FOLDER_2_MOVE_NEW_PATH = TEST_CONTAINERS_FOLDER + "/folder2/folderMoved";
   public static final String FILE_NAME = "file.txt";
   public static final String FILE_NAME_4_UPLOADING = "file2upload.txt";
