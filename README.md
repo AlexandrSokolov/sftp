@@ -1,16 +1,28 @@
+Notes:
 
+An alternative approach to work with sftp is to mount sftp to the local folder and access it as a usual local folder.
+
+* **Pros:** It simplifies development and access
+* **Cons:** It might make maintenance and problems investigation more difficult. 
+
+* [Ssh auth logging for sftp](#ssh-auth-logging-for-sftp)
+* [Sftp logging](#sftp-logging)
 * [Iterate via all files. Filtering. Reading the filtered files](#iterate-via-all-files-filtering-reading-the-filtered-files)
 * [Sftp file/directory commands](#sftp-filedirectory-commands)
 * [Sftp host key](#sftp-host-key)
+* [Maven dependency for `jsch`](#maven-dependency-for-jsch)
 * [Official documentation](#official-documentation)
-
-
 
 
 ### Official documentation
 
 - [Official documentation of `atmoz/sftp` docker image](https://github.com/atmoz/sftp)
 - [sftp container configuration, see `TestSftpContainer`](src/test/java/com/example/sftp/TestSftpContainer.java)
+
+Examples:
+- [Efficient SFTP Testing with JSch, Kotlin, Testcontainers, and Spring Boot Native](https://medium.com/whozapp/sftp-test-implem-of-jsch-with-kotlin-testcontainers-and-spring-boot-native-537f624da895)
+- [Testing with Kotest and TestContainers](https://medium.com/whozapp/testing-with-kotest-and-testcontainers-8e3cfce96a0b)
+- [testcontainers-java `SftpContainerTest.java`](https://github.com/testcontainers/testcontainers-java/blob/main/examples/sftp/src/test/java/org/example/SftpContainerTest.java)
 
 ### Iterate via all files. Filtering. Reading the filtered files
 
@@ -147,6 +159,44 @@ For these commands you know in advance the exact sftp path of the file/directory
 
 ```
 
+### Ssh auth logging for sftp
+
+SSH authentication logging is implemented via `SftpDebugLogger`:
+```java
+  private static class SftpDebugLogger implements com.jcraft.jsch.Logger {
+
+    private static final Logger logger = LogManager.getLogger(com.example.sftp.SftpService.class.getName());
+
+    @Override
+    public boolean isEnabled(int ignored) {
+      return logger.isDebugEnabled();
+    }
+
+    @Override
+    public void log(int ignored, String message) {
+      logger.debug(() -> message);
+    }
+  }
+```
+that is enabled as:
+```java
+JSch.setLogger(new SftpDebugLogger());
+```
+
+### Sftp logging
+
+TODO
+
+1. On the server side
+2. On the client side
+
+Related topics:
+[Logging SFTP operations](https://github.com/atmoz/sftp/issues/86)
+
+# Enable this for more logs
+#LogLevel VERBOSE
+https://github.com/atmoz/sftp/blob/master/files/sshd_config
+
 ### Sftp host key
 
 By default, docker sftp container each time generates a new ssh host key.
@@ -166,3 +216,24 @@ and saved as [`id_ed25519_sftp_container`](src/test/resources/ssh/id_ed25519_sft
       String.format("/home/%s/.ssh/keys/id_ed25519_client.pub", SFTP_LOGIN))
 ```
 
+Note: for testing and only for testing we set `StrictHostKeyChecking=no` via: `JSch.setConfig("StrictHostKeyChecking", "no");`
+
+
+### Maven dependency for `jsch`
+```xml
+    <!-- https://mvnrepository.com/artifact/com.github.mwiede/jsch -->
+    <dependency>
+      <groupId>com.github.mwiede</groupId>
+      <artifactId>jsch</artifactId>
+      <version>0.2.18</version>
+    </dependency>
+```
+
+the new version, just a new repo for its old originator that is not supported anymore:
+```xml
+    <dependency>
+      <groupId>com.jcraft</groupId>
+      <artifactId>jsch</artifactId>
+      <version>0.1.55</version>
+    </dependency>
+```

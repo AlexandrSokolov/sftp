@@ -1,12 +1,12 @@
 package com.example.sftp;
 
 import com.jcraft.jsch.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,6 +26,7 @@ public class SftpService implements SftpApi {
   public static SftpApi instance(SftpConfiguration sftpConfiguration) {
     try {
       var jsch = new JSch();
+      JSch.setLogger(new SftpDebugLogger());
       jsch.setKnownHosts(KNOWN_HOSTS_PATH);
       Session jschSession = jsch.getSession(
         sftpConfiguration.sftpUser(),
@@ -40,6 +41,21 @@ public class SftpService implements SftpApi {
       return new SftpService(jschSession, sftpChannel);
     } catch (JSchException e) {
       throw new IllegalStateException(e);
+    }
+  }
+
+  private static class SftpDebugLogger implements com.jcraft.jsch.Logger {
+
+    private static final Logger logger = LogManager.getLogger(com.example.sftp.SftpService.class.getName());
+
+    @Override
+    public boolean isEnabled(int ignored) {
+      return logger.isDebugEnabled();
+    }
+
+    @Override
+    public void log(int ignored, String message) {
+      logger.debug(() -> message);
     }
   }
 
