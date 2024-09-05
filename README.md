@@ -19,6 +19,7 @@ An alternative approach to work with sftp is to mount sftp to the local folder a
 - [Official documentation of `atmoz/sftp` docker image](https://github.com/atmoz/sftp)
 - [sftp container configuration, see `TestSftpContainer`](src/test/java/com/example/sftp/TestSftpContainer.java)
 - [Sftp codes](https://winscp.net/eng/docs/sftp_codes)
+- [jsch `ChannelSftp` API](https://epaul.github.io/jsch-documentation/javadoc/com/jcraft/jsch/ChannelSftp.html)
 
 Examples:
 - [Efficient SFTP Testing with JSch, Kotlin, Testcontainers, and Spring Boot Native](https://medium.com/whozapp/sftp-test-implem-of-jsch-with-kotlin-testcontainers-and-spring-boot-native-537f624da895)
