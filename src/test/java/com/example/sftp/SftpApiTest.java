@@ -13,6 +13,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.example.sftp.TestSftpContainer.*;
 
@@ -36,7 +39,7 @@ public class SftpApiTest {
        .filter(entry -> entry.getKey().endsWith("file.txt"))
        .forEach(entry -> {
          Assertions.assertEquals(
-           String.format("%s%s/%s", SFTP_HOME_PATH, WRITE_PERMISSION_FOLDER, FILE_NAME),
+           String.format("%s/%s", TEST_CONTAINERS_FOLDER, FILE_NAME),
            entry.getKey());
          try(InputStream inputStream = entry.getValue().get()) {
            Assertions.assertEquals(
@@ -50,8 +53,31 @@ public class SftpApiTest {
   }
 
   @Test
+  public void testDirsStream() {
+    try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
+      Map<String, List<String>> result = sftpApi.dirsStream(SFTP_HOME_PATH).collect(
+        LinkedHashMap::new,
+        (m, v)-> m.put(v.getKey(), v.getValue()),
+        Map::putAll);
+      Assertions.assertEquals(4, result.size());
+      Assertions.assertTrue(result.get(SFTP_HOME_PATH).isEmpty());
+      Assertions.assertEquals(2, result.get(TEST_CONTAINERS_FOLDER).size());
+
+      try(InputStream inputStream = sftpApi.fileDownload(
+        TEST_CONTAINERS_FOLDER + "/" + result.get(TEST_CONTAINERS_FOLDER)
+          .getFirst())) {
+        Assertions.assertEquals(
+          "file 2 move",
+          new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+  }
+
+  @Test
   public void testFileExists() {
-    var filePath = String.format("%s%s/%s", SFTP_HOME_PATH, WRITE_PERMISSION_FOLDER, FILE_NAME);
+    var filePath = String.format("%s/%s", TEST_CONTAINERS_FOLDER, FILE_NAME);
     try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
       Assertions.assertTrue(sftpApi.fileExists(filePath));
     }
@@ -59,7 +85,7 @@ public class SftpApiTest {
 
   @Test
   public void testFileDownload() {
-    var filePath = String.format("%s%s/%s", SFTP_HOME_PATH, WRITE_PERMISSION_FOLDER, FILE_NAME);
+    var filePath = String.format("%s/%s", TEST_CONTAINERS_FOLDER, FILE_NAME);
     try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
       try(InputStream inputStream = sftpApi.fileDownload(filePath)) {
         Assertions.assertEquals(
@@ -74,7 +100,7 @@ public class SftpApiTest {
   @Test
   public void testFileUpload() {
     //upload `file2upload.txt` from resources into /upload/testcontainers/file_new.txt
-    var filePath = String.format("%s%s/%s", SFTP_HOME_PATH, WRITE_PERMISSION_FOLDER, NEW_FILE_NAME);
+    var filePath = String.format("%s/%s", TEST_CONTAINERS_FOLDER, NEW_FILE_NAME);
     try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
       Assertions.assertFalse(sftpApi.fileExists(filePath));
       try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(FILE_NAME_4_UPLOADING);) {
@@ -102,7 +128,7 @@ public class SftpApiTest {
 
   @Test
   public void testMkdir() {
-    var emptyFolderPath = SFTP_HOME_PATH + WRITE_PERMISSION_FOLDER + NEW_FOLDER_PATH;
+    var emptyFolderPath = TEST_CONTAINERS_FOLDER + NEW_FOLDER_PATH;
     try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
       //folder does not exist yet
       Assertions.assertFalse(sftpApi.dirExists(emptyFolderPath));
@@ -129,7 +155,7 @@ public class SftpApiTest {
 
   @Test
   public void testRemoveFile() {
-    var filePath = String.format("%s%s/%s", SFTP_HOME_PATH, WRITE_PERMISSION_FOLDER, "temp.txt");
+    var filePath = String.format("%s/%s", TEST_CONTAINERS_FOLDER, "temp.txt");
     try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
       Assertions.assertFalse(sftpApi.fileExists(filePath));
       sftpApi.fileUpload(filePath, new ByteArrayInputStream("".getBytes() ));
@@ -142,7 +168,7 @@ public class SftpApiTest {
 
   @Test
   public void testRemoveDir() {
-    var dirPath = String.format("%s%s%s", SFTP_HOME_PATH, WRITE_PERMISSION_FOLDER, "/tmp");
+    var dirPath = String.format("%s%s", TEST_CONTAINERS_FOLDER, "/tmp");
     try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
       Assertions.assertFalse(sftpApi.dirExists(dirPath));
       sftpApi.mkdir(dirPath);
@@ -155,9 +181,9 @@ public class SftpApiTest {
 
   @Test
   public void testMoveFile() {
-    var originalFilePath = String.format("%s%s/%s", SFTP_HOME_PATH, WRITE_PERMISSION_FOLDER, FILE_NAME_4_MOVING);
-    //var newFilePath = String.format("%s%s/%s", SFTP_HOME_PATH, WRITE_PERMISSION_FOLDER, "ww" + FILE_NAME_4_MOVING);
-    var newFilePath = String.format("%s%s%s", SFTP_HOME_PATH, WRITE_PERMISSION_FOLDER, "/new/path/moved.txt");
+    var originalFilePath = String.format("%s/%s", TEST_CONTAINERS_FOLDER, FILE_NAME_4_MOVING);
+    //var newFilePath = String.format("%s/%s", TEST_CONTAINERS_FOLDER, "moved_" + FILE_NAME_4_MOVING);
+    var newFilePath = String.format("%s%s", TEST_CONTAINERS_FOLDER, "/new/path/moved.txt");
     try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
       Assertions.assertFalse(sftpApi.fileExists(newFilePath));
 
@@ -167,6 +193,9 @@ public class SftpApiTest {
     }
   }
 
+  /**
+   * See <a href="https://stackoverflow.com/questions/78951835/sftp-file-moving-not-working-but-file-renaming-works">...</a>
+   */
   @Test
   public void testMoveDir() {
     try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {

@@ -1,15 +1,22 @@
-Notes:
+**Notes:**
 
 An alternative approach to work with sftp is to mount sftp to the local folder and access it as a usual local folder.
 
 * **Pros:** It simplifies development and access
 * **Cons:** It might make maintenance and problems investigation more difficult. 
 
+### Sftp issues and solutions:
+
+* [Iterate via all files. Filtering. Reading the filtered files](#iterate-via-all-files-filtering-reading-the-filtered-files)
+* [Iterate via all folders. Get all the mappings between folder and the files, it contains](#iterate-via-all-sftp-folders)
+* [Sftp file/directory commands](#sftp-filedirectory-commands)
+
+
 * [Ssh auth logging for sftp](#ssh-auth-logging-for-sftp)
 * [Sftp logging](#sftp-logging)
-* [Iterate via all files. Filtering. Reading the filtered files](#iterate-via-all-files-filtering-reading-the-filtered-files)
-* [Sftp file/directory commands](#sftp-filedirectory-commands)
 * [Sftp host key](#sftp-host-key)
+
+
 * [Maven dependency for `jsch`](#maven-dependency-for-jsch)
 * [Official documentation](#official-documentation)
 
@@ -43,6 +50,34 @@ Examples:
            throw new IllegalStateException(e);
          }
        });
+    }
+  }
+```
+
+### Iterate via all sftp folders
+
+Iterate via all folders. Get all the mappings between folder and the files, it contains
+```java
+  @Test
+  public void testDirsStream() {
+    try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
+      Map<String, List<String>> result = sftpApi.dirsStream(SFTP_HOME_PATH).collect(
+        LinkedHashMap::new,
+        (m, v)-> m.put(v.getKey(), v.getValue()),
+        Map::putAll);
+      Assertions.assertEquals(4, result.size());
+      Assertions.assertTrue(result.get(SFTP_HOME_PATH).isEmpty());
+      Assertions.assertEquals(2, result.get(TEST_CONTAINERS_FOLDER).size());
+
+      try(InputStream inputStream = sftpApi.fileDownload(
+        TEST_CONTAINERS_FOLDER + "/" + result.get(TEST_CONTAINERS_FOLDER)
+          .getFirst())) {
+        Assertions.assertEquals(
+          "file 2 move",
+          new String(inputStream.readAllBytes(), StandardCharsets.UTF_8));
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
+      }
     }
   }
 ```

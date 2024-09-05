@@ -73,6 +73,17 @@ public class SftpService implements SftpApi {
   }
 
   @Override
+  public Stream<Map.Entry<String, List<String>>> dirsStream(String sftpPath) {
+    return allFolders(sftpPath).stream()
+      .map(folderPath -> new AbstractMap.SimpleEntry<>(
+        folderPath,
+        uncheckCall(() -> sftpChannel.ls(folderPath).stream()
+          .filter(entry -> !entry.getAttrs().isDir())
+          .map(ChannelSftp.LsEntry::getFilename)
+          .toList())));
+  }
+
+  @Override
   public boolean fileExists(String sftpPath) {
     try {
       var attrs = sftpChannel.stat(sftpPath);

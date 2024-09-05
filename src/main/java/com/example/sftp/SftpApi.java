@@ -1,6 +1,7 @@
 package com.example.sftp;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -10,7 +11,22 @@ public interface SftpApi extends AutoCloseable {
   String PERMISSION_DENIED = "Permission denied";
   String WRITABLE_PERMISSIONS_STR = "drwxrwxrwx";
 
+  /**
+   * Iterates only via files, providing to the caller a simple way to access file path and its InputStream
+   *
+   * @param sftpPath
+   * @return
+   */
   Stream<Map.Entry<String, Supplier<InputStream>>> filesStream(String sftpPath);
+
+  /**
+   * Iterates via all folders, including folders with no files in it, providing to the caller mappings between folder path and its files.
+   * The caller by itself, decide what to do with those files using `SftpApi` api
+   *
+   * @param sftpPath
+   * @return
+   */
+  Stream<Map.Entry<String, List<String>>> dirsStream(String sftpPath);
 
   boolean fileExists(String sftpPath);
 
