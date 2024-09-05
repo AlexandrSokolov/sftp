@@ -169,7 +169,7 @@ public class SftpService implements SftpApi {
       var destinationPathAsList = Arrays.stream(destinationPath.split("/"))
         .filter(s -> !s.isEmpty())
         .toList();
-      var destinationFolder = String.join("/",
+      var destinationFolder = "/" + String.join("/",
         destinationPathAsList.subList(0, destinationPathAsList.size() - 1));
       if (!dirExists(destinationFolder)) {
         mkdir(destinationPath);
