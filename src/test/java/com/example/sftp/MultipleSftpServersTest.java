@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -16,7 +15,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
   SftpDiConfiguration.class,
   TestMultipleSftpContainers.class})
 @Testcontainers
-@PropertySource("classpath:external.config.yaml")
 public class MultipleSftpServersTest {
 
   @Autowired

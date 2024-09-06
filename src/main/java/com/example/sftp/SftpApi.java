@@ -8,9 +8,6 @@ import java.util.stream.Stream;
 
 public interface SftpApi extends AutoCloseable {
 
-  String PERMISSION_DENIED = "Permission denied";
-  String WRITABLE_PERMISSIONS_STR = "drwxrwxrwx";
-
   /**
    * Iterates only via files, providing to the caller a simple way to access file path and its InputStream
    *

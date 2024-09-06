@@ -7,6 +7,8 @@ An alternative approach to work with sftp is to mount sftp to the local folder a
 
 ### Sftp issues and solutions:
 
+* [How to copy this project into your own](new.sftp.project.md)
+
 * [Iterate via all files. Filtering. Reading the filtered files](#iterate-via-all-files-filtering-reading-the-filtered-files)
 * [Iterate via all folders. Get all the mappings between folder and the files, it contains](#iterate-via-all-sftp-folders)
 * [Sftp file/directory commands](#sftp-filedirectory-commands)

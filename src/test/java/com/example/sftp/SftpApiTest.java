@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -33,7 +32,6 @@ import static com.example.sftp.docker.SftpDockerConstants.*;
   SftpDiConfiguration.class,
   TestSftpContainer.class})
 @Testcontainers
-@PropertySource("classpath:external.config.yaml")
 public class SftpApiTest {
 
   private static final Logger logger = LogManager.getLogger(SftpApiTest.class.getName());

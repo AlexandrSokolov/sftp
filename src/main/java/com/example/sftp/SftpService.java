@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
@@ -15,6 +16,8 @@ import java.util.stream.Stream;
 import static com.example.sftp.config.SftpConfiguration.KNOWN_HOSTS_PATH;
 
 public class SftpService implements SftpApi {
+
+  private static final String PERMISSION_DENIED = "Permission denied";
 
   private static final Logger logger = LogManager.getLogger(SftpService.class.getName());
 
@@ -57,6 +60,9 @@ public class SftpService implements SftpApi {
       jschSession.connect();
 
       ChannelSftp sftpChannel = (ChannelSftp) jschSession.openChannel("sftp");
+      Optional.ofNullable(sftpConfiguration.getFileNameEncoding())
+        .map(Charset::forName)
+        .ifPresent(sftpChannel::setFilenameEncoding);
       sftpChannel.connect();
 
       return new SftpService(sftpConfiguration, jschSession, sftpChannel);
@@ -66,8 +72,6 @@ public class SftpService implements SftpApi {
   }
 
   private static class SftpDebugLogger implements com.jcraft.jsch.Logger {
-
-    private static final Logger logger = LogManager.getLogger(com.example.sftp.SftpService.class.getName());
 
     @Override
     public boolean isEnabled(int ignored) {
