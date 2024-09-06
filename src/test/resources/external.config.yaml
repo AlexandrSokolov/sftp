@@ -1,0 +1,41 @@
+app:
+  systems-auth:
+    system1:
+      host: a.com
+      login: a_login
+      password: b_pass
+    system2:
+      host: b.com
+      login: b_login
+      password: b_pass
+
+  notification:
+    sender:
+      name: Sender Name
+      email: sender@a.com
+    recipients:
+      - a@a.com
+      - b@b.com
+      - c@c.com
+
+  # connect via ssh to each sftp hosts, to add host key to `known_hosts`
+  sftp-servers:
+    - host: localhost
+      port: 22
+      username: foo
+      password: pass
+      home: ./
+
+    - host: localhost
+      port: 23
+      username: foo
+      password: pass
+      home: ./
+      fileNameEncoding: Cp1252
+
+    - host: localhost
+      port: 24
+      username: foo
+      # sftp host ssh private key:
+      identity-file: ./src/test/resources/ssh/id_ed25519_sftp3_container
+      home: ./

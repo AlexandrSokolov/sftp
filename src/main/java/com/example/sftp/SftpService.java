@@ -1,5 +1,6 @@
 package com.example.sftp;
 
+import com.example.sftp.config.SftpConfiguration;
 import com.jcraft.jsch.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,34 +12,54 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.example.sftp.SftpConfiguration.KNOWN_HOSTS_PATH;
+import static com.example.sftp.config.SftpConfiguration.KNOWN_HOSTS_PATH;
 
 public class SftpService implements SftpApi {
 
+  private static final Logger logger = LogManager.getLogger(SftpService.class.getName());
+
+  private final SftpConfiguration sftpConfiguration;
   private final Session jschSession;
   private final ChannelSftp sftpChannel;
 
-  private SftpService(Session jschSession, ChannelSftp sftpChannel) {
+  private SftpService(SftpConfiguration sftpConfiguration, Session jschSession, ChannelSftp sftpChannel) {
+    this.sftpConfiguration = sftpConfiguration;
     this.jschSession = jschSession;
     this.sftpChannel = sftpChannel;
   }
 
   public static SftpApi instance(SftpConfiguration sftpConfiguration) {
     try {
+      if (Set.of(
+          Optional.ofNullable(sftpConfiguration.getIdentityFile()),
+          Optional.ofNullable(sftpConfiguration.getPassword())).stream()
+        .allMatch(Optional::isPresent)) {
+        throw new IllegalStateException("Sftp configuration cannot contain both password and identity key. " +
+          "Sftp host: " + sftpConfiguration.getHost());
+      }
+
       var jsch = new JSch();
       JSch.setLogger(new SftpDebugLogger());
       jsch.setKnownHosts(KNOWN_HOSTS_PATH);
+      Optional.ofNullable(sftpConfiguration.getIdentityFile())
+        .ifPresent(cert ->
+          uncheckCall(() -> {
+            jsch.addIdentity(cert);
+            return null;
+          }));
       Session jschSession = jsch.getSession(
-        sftpConfiguration.sftpUser(),
-        sftpConfiguration.host(),
-        sftpConfiguration.port());
-      jschSession.setPassword(sftpConfiguration.sftpPassword());
+        sftpConfiguration.getUsername(),
+        sftpConfiguration.getHost(),
+        sftpConfiguration.getPort());
+
+      Optional.ofNullable(sftpConfiguration.getPassword()).ifPresent(jschSession::setPassword);
+
       jschSession.connect();
 
       ChannelSftp sftpChannel = (ChannelSftp) jschSession.openChannel("sftp");
       sftpChannel.connect();
 
-      return new SftpService(jschSession, sftpChannel);
+      return new SftpService(sftpConfiguration, jschSession, sftpChannel);
     } catch (JSchException e) {
       throw new IllegalStateException(e);
     }
@@ -264,8 +285,20 @@ public class SftpService implements SftpApi {
 
   @Override
   public void close() {
-    Optional.ofNullable(sftpChannel).ifPresent(ChannelSftp::disconnect);
-    Optional.ofNullable(jschSession).ifPresent(Session::disconnect);
+    try {
+      Optional.ofNullable(sftpChannel).ifPresent(ChannelSftp::disconnect);
+    } catch (Exception e) {
+      logger.error(() ->
+        "Could not close successfully the connection for not-nullable sftp channel. Sftp host: '"
+          + sftpConfiguration.getHost() + "'. Error: " + e.getMessage());
+    }
+    try {
+      Optional.ofNullable(jschSession).ifPresent(Session::disconnect);
+    } catch (Exception e) {
+      logger.error(() ->
+        "Could not close successfully the connection for not-nullable jsch session. Sftp host: "
+          + sftpConfiguration.getHost() + "'. Error: " + e.getMessage());
+    }
   }
 
   public ChannelSftp sftpChannel() {

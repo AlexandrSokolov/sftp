@@ -1,17 +1,22 @@
-- multiple sftp servers configuration
 - docker composition with several sftp servers (password-based and key-based)
   [docker composition with sftp](https://github.com/atmoz/sftp?tab=readme-ov-file#using-docker-compose)
     [How to use atmoz/sftp? (in docker)](https://stackoverflow.com/questions/68459632/how-to-use-atmoz-sftp)
-- add for all iterations maxdepth, see example for files 
-```java
-try (Stream<Path> paths = Files.find("/some/folder/path", /*maxDepth*/ 1) {
-  paths.map(Path::toAbsolutePath)
-    .map(Path::toString)
-    .max(String.CASE_INSENSITIVE_ORDER) //take the last file
-    .ifPresent(filePath -> handleFile(filePath));
-}
 
+
+### external configuration 
+ move to spring indepenent project, leave only sftp-related condigs
+
+```bash
+$ java -jar myproject.jar --spring.config.import=\
+    classpath:datasource.properties,\
+    classpath:mysql-properties.properties,\
+    optional:file:./cloud-deployment.properties,\
+    classpath:test-properties/
 ```
+
+pass in docker composition!
+
+### move all the configurations into spring config demo project, leave in this project only sftp-specific
 
 ### how to mount sftp to a local folder
 

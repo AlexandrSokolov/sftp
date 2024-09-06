@@ -1,13 +1,19 @@
 package com.example.sftp;
 
+import com.example.sftp.config.AppExternalConfiguration;
+import com.example.sftp.config.SftpConfiguration;
+import com.example.sftp.config.SftpDiConfiguration;
+import com.example.sftp.docker.TestSftpContainer;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -20,20 +26,32 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.example.sftp.TestSftpContainer.*;
+import static com.example.sftp.docker.SftpDockerConstants.*;
 
 @SpringBootTest
 @ContextConfiguration(classes = {
   SftpDiConfiguration.class,
   TestSftpContainer.class})
 @Testcontainers
+@PropertySource("classpath:external.config.yaml")
 public class SftpApiTest {
 
   private static final Logger logger = LogManager.getLogger(SftpApiTest.class.getName());
 
 
   @Autowired
+  private AppExternalConfiguration appExternalConfiguration;
+
   private SftpConfiguration sftpConfiguration;
+
+  @BeforeEach
+  public void init() {
+    Assertions.assertNotNull(appExternalConfiguration);
+    Assertions.assertNotNull(appExternalConfiguration.getSftpServers());
+    sftpConfiguration = appExternalConfiguration
+      .getSftpServers()
+      .getFirst();
+  }
 
   @Test
   public void testFilesStream() {
