@@ -14,6 +14,19 @@ $ java -jar myproject.jar --spring.config.import=\
 how to pass in integration test,
 how to pass in docker composition!
 
+docker composition: see in docker-compose.yaml
+To build the project:
+```bash
+docker container rm cs-app && \
+  docker image rm cs-app:latest && \
+  mvn -o clean install && \
+  mkdir -p target/sftp/testcontainers && \
+  docker compose up
+
+```
+
+TODO - add files to sftp for testing purpose
+
 ### move all the configurations into spring config demo project, leave in this project only sftp-specific
 
 ### how to mount sftp to a local folder

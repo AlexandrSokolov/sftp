@@ -8,8 +8,10 @@ services:
           # for containers, sftp host is accessible as `sftp`: `ssh foo@sftp`
           - sftp
     volumes:
-      # add `/testcontainers` writable folder
-      - ./src/test/resources/testcontainers:/home/foo/upload/testcontainers
+      # add `/testcontainers` writable folder, and mount it to our /target/sftp/testcontainers folder
+      # if you do not create this folder by yourself, docker creates it with `root` permissions
+      # `mkdir -p target/sftp/testcontainers`
+      - ./target/sftp/testcontainers:/home/foo/upload/testcontainers
       # to keep the same host key for connection
       - ./src/test/resources/ssh/id_ed25519_sftp1_container:/etc/ssh/ssh_host_ed25519_key
       - ./src/test/resources/ssh/id_ed25519_sftp1_container.pub:/home/foo/.ssh/keys/id_ed25519_client.pub
