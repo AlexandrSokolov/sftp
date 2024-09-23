@@ -42,7 +42,7 @@ public class SftpService implements SftpApi {
       }
 
       var jsch = new JSch();
-      JSch.setLogger(new SftpDebugLogger());
+      JSch.setLogger(new SshAuthDebugLogger());
       jsch.setKnownHosts(KNOWN_HOSTS_PATH);
       Optional.ofNullable(sftpConfiguration.getIdentityFile())
         .ifPresent(cert ->
@@ -57,12 +57,15 @@ public class SftpService implements SftpApi {
 
       Optional.ofNullable(sftpConfiguration.getPassword()).ifPresent(jschSession::setPassword);
 
-      jschSession.connect();
+      //set timeout:
+      jschSession.setTimeout(SFTP_TIMEOUT_MILLIS); //default - 0 - infinite
+      jschSession.connect(SFTP_TIMEOUT_MILLIS); //default - 20 seconds
 
       ChannelSftp sftpChannel = (ChannelSftp) jschSession.openChannel("sftp");
       Optional.ofNullable(sftpConfiguration.getFileNameEncoding())
         .map(Charset::forName)
         .ifPresent(sftpChannel::setFilenameEncoding);
+
       sftpChannel.connect();
 
       return new SftpService(sftpConfiguration, jschSession, sftpChannel);
@@ -71,7 +74,8 @@ public class SftpService implements SftpApi {
     }
   }
 
-  private static class SftpDebugLogger implements com.jcraft.jsch.Logger {
+  //this logger logs only ssh auth commands, but not sftp commands
+  private static class SshAuthDebugLogger implements com.jcraft.jsch.Logger {
 
     @Override
     public boolean isEnabled(int ignored) {

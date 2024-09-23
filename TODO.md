@@ -1,6 +1,4 @@
-### md5 of the files
-
-### external configuration 
+### external configuration in Spring, passing to docker container, in tests 
  move to spring indepenent project, leave only sftp-related condigs
 
 ```bash
@@ -11,8 +9,8 @@ $ java -jar myproject.jar --spring.config.import=\
     classpath:test-properties/
 ```
 
-how to pass in integration test,
-how to pass in docker composition!
+how to pass separately in integration test,
+how to pass separately in docker composition!
 
 docker composition: see in docker-compose.yaml
 To build the project:
@@ -44,3 +42,31 @@ public void put(String src, String dst, SftpProgressMonitor monitor)
 # Enable this for more logs
 #LogLevel VERBOSE
 https://github.com/atmoz/sftp/blob/master/files/sshd_config
+
+### timeout issue
+
+Looks as it is entirely ignored:
+I've set: `jschSession.setTimeout(100);`
+
+
+In the test, it did not work.
+Comments with exception,just possible exceptions that could be catched, but were not. 
+```java
+  @Test
+  public void testSftpTimeout() throws InterruptedException {
+    try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
+      Assertions.assertTrue(sftpApi.fileExists("/upload/testcontainers/file.txt"));
+      TimeUnit.MINUTES.sleep(1);
+      //java.net.SocketTimeoutException
+      //Caused by: com.jcraft.jsch.JSchException: java.net.ConnectException: Connection timed out:
+      //com.jcraft.jsch.JSchException: Session.connect: java.net.SocketTimeoutException: Read timed out
+      var exception = Assertions.assertThrows(
+        SftpException.class,
+        () -> sftpApi.fileExists("/upload/testcontainers/file.txt"));
+      Assertions.assertEquals(
+        "fs",
+        exception.getMessage()
+      );
+    }
+  }
+```

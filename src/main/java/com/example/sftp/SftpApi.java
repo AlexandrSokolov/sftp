@@ -3,10 +3,13 @@ package com.example.sftp;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public interface SftpApi extends AutoCloseable {
+
+  Integer SFTP_TIMEOUT_MILLIS = (int) TimeUnit.MILLISECONDS.convert(30, TimeUnit.SECONDS);
 
   /**
    * Iterates only via files, providing to the caller a simple way to access file path and its InputStream

@@ -12,8 +12,9 @@ An alternative approach to work with sftp is to mount sftp to the local folder a
 * [Iterate via all files. Filtering. Reading the filtered files](#iterate-via-all-files-filtering-reading-the-filtered-files)
 * [Iterate via all folders. Get all the mappings between folder and the files, it contains](#iterate-via-all-sftp-folders)
 * [Sftp file/directory commands](#sftp-filedirectory-commands)
+* [Get MD5 hash (not reliable)](#get-md5-hash-of-the-file)
 
-
+* [Sftp timeouts settings](#sftp-timeouts-settings)
 * [Ssh auth logging for sftp](#ssh-auth-logging-for-sftp)
 * [Sftp logging](#sftp-logging)
 * [Sftp host key](#sftp-host-key)
@@ -216,6 +217,60 @@ For these commands you know in advance the exact sftp path of the file/directory
      }
    ```
 
+### Get MD5 hash of the file
+
+SFTP protocol does not allow to get MD5 (or other) hash of the file.
+
+`jsch` still allows to run commands via ssh, so you could execute `md5sum` linux command to get this hash value,
+passing the real file path to this command.
+
+The problem is that sftp file path, does not mean the real file path. 
+
+They might be the same if user's home folder entirely is mounted via sftp, but it is not a rule.
+
+Also depending on linux command does not make the solution generic.
+
+As a result, it is possible to implement, but it will be an exception and cannot be part of the sftp "library".
+
+### Sftp timeouts settings
+
+Note: I could not catch timeout exception with `atmoz/sftp`. 
+Setting timeouts to 30 seconds, and waiting for 1 minute between sftp commands, did not trigger timeouts exception.
+Need to be investigated.
+
+Setting timeouts:
+1. Per session (default is 0 - meaning infinite): `jschSession.setTimeout(SFTP_TIMEOUT);`
+2. Per connection (default - 20 seconds): `jschSession.connect(SFTP_TIMEOUT);`
+3. Using timeout socket factory:
+   ```java
+   import com.jcraft.jsch.SocketFactory;
+   
+   import static com.example.sftp.SftpApi.SFTP_TIMEOUT_MILLIS;
+   
+   public class SocketFactoryWithTimeout implements SocketFactory {
+   
+      public Socket createSocket(String host, int port) throws IOException, UnknownHostException {
+         var socket = new Socket();
+         socket.connect(new InetSocketAddress(host, port), SFTP_TIMEOUT_MILLIS);
+         return socket;
+      }
+   
+      public InputStream getInputStream(Socket socket) throws IOException {
+         return socket.getInputStream();
+      }
+   
+      public OutputStream getOutputStream(Socket socket) throws IOException {
+         return socket.getOutputStream();
+      }
+   }
+   ```
+   And set it as: `jschSession.setSocketFactory(new SocketFactoryWithTimeout());`
+
+Related issues:
+- [JSch session timeout limit](https://stackoverflow.com/questions/35009009/jsch-session-timeout-limit)
+- [Can I set timeout explicitely by purpose?](https://github.com/atmoz/sftp/issues/417)
+- [What is the default timeout for Session and Channel in JSch library in java](https://stackoverflow.com/questions/28038747/what-is-the-default-timeout-for-session-and-channel-in-jsch-library-in-java)
+
 ### Ssh auth logging for sftp
 
 SSH authentication logging is implemented via `SftpDebugLogger`:
@@ -242,17 +297,14 @@ JSch.setLogger(new SftpDebugLogger());
 
 ### Sftp logging
 
-TODO
-
-1. On the server side
-2. On the client side
+1. On the server side - depends on the sftp server.
+2. On the client side - not supported by `jSch`, you could log only ssh authentication connection logic
 
 Related topics:
 [Logging SFTP operations](https://github.com/atmoz/sftp/issues/86)
+[JSch logger - where can I configure the level - **DOES NOT log** log sftp commands](https://stackoverflow.com/a/29603041/511804)
+[Set #LogLevel VERBOSE](https://github.com/atmoz/sftp/blob/master/files/sshd_config)
 
-# Enable this for more logs
-#LogLevel VERBOSE
-https://github.com/atmoz/sftp/blob/master/files/sshd_config
 
 ### Sftp host key
 
