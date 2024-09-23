@@ -1,23 +1,4 @@
 app:
-  systems-auth:
-    system1:
-      host: a.com
-      login: a_login
-      password: b_pass
-    system2:
-      host: b.com
-      login: b_login
-      password: b_pass
-
-  notification:
-    sender:
-      name: Sender Name
-      email: sender@a.com
-    recipients:
-      - a@a.com
-      - b@b.com
-      - c@c.com
-
   # connect via ssh to each sftp hosts, to add host key to `known_hosts`
   sftp-servers:
     - host: localhost

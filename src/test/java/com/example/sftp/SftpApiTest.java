@@ -45,9 +45,9 @@ public class SftpApiTest {
   @BeforeEach
   public void init() {
     Assertions.assertNotNull(appExternalConfiguration);
-    Assertions.assertNotNull(appExternalConfiguration.getSftpServers());
+    Assertions.assertNotNull(appExternalConfiguration.sftpServers());
     sftpConfiguration = appExternalConfiguration
-      .getSftpServers()
+      .sftpServers()
       .getFirst();
   }
 

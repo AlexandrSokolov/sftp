@@ -22,11 +22,11 @@ public class MultipleSftpServersTest {
 
   @Test
   public void testMultipleSftpServers() {
-    appExternalConfiguration.getSftpServers()
+    appExternalConfiguration.sftpServers()
       .forEach(sftpServerConfig -> {
         try (SftpService sftpService = (SftpService) SftpService.instance(sftpServerConfig)) {
           Assertions.assertTrue(sftpService.sftpChannel().isConnected(),
-          () -> "Could not connect to '= " + sftpServerConfig.getHost() + "' sftp");
+          () -> "Could not connect to '= " + sftpServerConfig.host() + "' sftp");
         }
       });
   }
