@@ -1,11 +1,11 @@
-app:
-  # connect via ssh to each sftp hosts, to add host key to `known_hosts`
+sftp-servers:
+# connect via ssh to each sftp hosts, to add host key to `known_hosts`
   sftp-servers:
     - host: localhost
       port: 22
       username: foo
       password: pass
-      home: ./
+      #home: ./
 
     - host: localhost
       port: 23

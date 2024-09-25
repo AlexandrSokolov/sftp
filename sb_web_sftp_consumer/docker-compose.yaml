@@ -1,0 +1,60 @@
+services:
+  sftp:
+    image: atmoz/sftp
+    container_name: sftp
+    networks:
+      app-net:
+        aliases:
+          # for containers, sftp host is accessible as `sftp`: `ssh foo@sftp`
+          - sftp
+    volumes:
+      # to keep the same host key for connection
+      - ../src/test/resources/ssh/id_ed25519_sftp1_container:/etc/ssh/ssh_host_ed25519_key
+      - ../src/test/resources/ssh/id_ed25519_sftp1_container.pub:/home/foo/.ssh/keys/id_ed25519_client.pub
+    ports:
+      # host port : container port
+      - "22:22"
+    command: foo:pass:::upload
+
+  sftp2:
+    image: atmoz/sftp
+    container_name: sftp2
+    networks:
+      app-net:
+        aliases:
+          # for containers, sftp host is accessible as `sftp`: `ssh foo@sftp`
+          - sftp2
+    volumes:
+      # to keep the same host key for connection
+      - ../src/test/resources/ssh/id_ed25519_sftp2_container:/etc/ssh/ssh_host_ed25519_key
+      - ../src/test/resources/ssh/id_ed25519_sftp2_container.pub:/home/foo/.ssh/keys/id_ed25519_client.pub
+    ports:
+      # host port : container port
+      - "23:22"
+    command: foo:pass:::upload
+
+  sb-sftp-app:
+    image: 'sb-sftp-app:latest'
+    build:
+      context: .
+    container_name: sb-sftp-app
+    networks:
+      - app-net
+    volumes:
+      - ./src/test/resources/app.external.config.yaml:/root/app.external.config.yaml
+      # `known_hosts` contains sftp host key, to avoid manual adding of this key, each time after container gets created
+      - ../src/test/resources/known_hosts:/root/.ssh/known_hosts
+      # for key-based ssh connection with sftp 2
+      - ../src/test/resources/ssh/id_ed25519_sftp2_container:/root/.ssh/id_ed25519_sftp2_container
+    ports:
+      - "8080:8080"
+      - "8787:8787"
+    environment:
+      - SPRING_CONFIG_IMPORT=file:/root/app.external.config.yaml
+      - JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8787
+      - JAVA_TOOL_OPTIONS=
+        -Dserver.servlet.context-path=
+        -DLOGGED_APPLICATION_NAME="Spring Web Sftp Demo"
+
+networks:
+  app-net:

@@ -1,9 +1,0 @@
-app:
-  # connect via ssh to each sftp hosts, to add host key to `known_hosts`
-  sftp-servers:
-    # within docker composition, sftp container is accessible via `sftp` network alias:
-    - host: sftp
-      port: 22
-      username: foo
-      password: pass
-      home: /upload/testcontainers

@@ -1,8 +1,8 @@
 package com.example.sftp;
 
-import com.example.sftp.config.AppExternalConfiguration;
 import com.example.sftp.config.SftpConfiguration;
-import com.example.sftp.config.SftpDiConfiguration;
+import com.example.sftp.config.TestSftpConfiguration;
+import com.example.sftp.config.TestsConfiguration;
 import com.example.sftp.docker.TestSftpContainer;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
@@ -29,7 +29,7 @@ import static com.example.sftp.docker.SftpDockerConstants.*;
 
 @SpringBootTest
 @ContextConfiguration(classes = {
-  SftpDiConfiguration.class,
+  TestsConfiguration.class,
   TestSftpContainer.class})
 @Testcontainers
 public class SftpApiTest {
@@ -38,15 +38,15 @@ public class SftpApiTest {
 
 
   @Autowired
-  private AppExternalConfiguration appExternalConfiguration;
+  private TestSftpConfiguration sftpServersConfiguration;
 
   private SftpConfiguration sftpConfiguration;
 
   @BeforeEach
   public void init() {
-    Assertions.assertNotNull(appExternalConfiguration);
-    Assertions.assertNotNull(appExternalConfiguration.sftpServers());
-    sftpConfiguration = appExternalConfiguration
+    Assertions.assertNotNull(sftpServersConfiguration);
+    Assertions.assertNotNull(sftpServersConfiguration.sftpServers());
+    sftpConfiguration = sftpServersConfiguration
       .sftpServers()
       .getFirst();
   }

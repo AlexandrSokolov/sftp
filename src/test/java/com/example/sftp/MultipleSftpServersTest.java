@@ -1,7 +1,7 @@
 package com.example.sftp;
 
-import com.example.sftp.config.AppExternalConfiguration;
-import com.example.sftp.config.SftpDiConfiguration;
+import com.example.sftp.config.TestsConfiguration;
+import com.example.sftp.config.TestSftpConfiguration;
 import com.example.sftp.docker.TestMultipleSftpContainers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -12,17 +12,17 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @SpringBootTest
 @ContextConfiguration(classes = {
-  SftpDiConfiguration.class,
+  TestsConfiguration.class,
   TestMultipleSftpContainers.class})
 @Testcontainers
 public class MultipleSftpServersTest {
 
   @Autowired
-  private AppExternalConfiguration appExternalConfiguration;
+  private TestSftpConfiguration sftpConfiguration;
 
   @Test
   public void testMultipleSftpServers() {
-    appExternalConfiguration.sftpServers()
+    sftpConfiguration.sftpServers()
       .forEach(sftpServerConfig -> {
         try (SftpService sftpService = (SftpService) SftpService.instance(sftpServerConfig)) {
           Assertions.assertTrue(sftpService.sftpChannel().isConnected(),

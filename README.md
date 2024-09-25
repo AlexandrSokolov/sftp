@@ -8,6 +8,8 @@ An alternative approach to work with sftp is to mount sftp to the local folder a
 ### Sftp issues and solutions:
 
 * [How to copy this project into your own](new.sftp.project.md)
+* [How to check the connections in the web application](sb_web_sftp_consumer/README.md)
+* [Sftp configuration options]()
 
 * [Iterate via all files. Filtering. Reading the filtered files](#iterate-via-all-files-filtering-reading-the-filtered-files)
 * [Iterate via all folders. Get all the mappings between folder and the files, it contains](#iterate-via-all-sftp-folders)
@@ -231,6 +233,37 @@ They might be the same if user's home folder entirely is mounted via sftp, but i
 Also depending on linux command does not make the solution generic.
 
 As a result, it is possible to implement, but it will be an exception and cannot be part of the sftp "library".
+
+### Sftp configuration options:
+
+Examples can be found in [`sftp.test.config.yaml`](src/test/resources/sftp.test.config.yaml)
+
+Authentication you can configure either via password or with an identity file 
+(the ssh private key, known to the server and shared with the client):
+Example with a key:
+```yaml
+    - host: localhost
+      port: 23
+      username: foo
+      password: pass
+      home: ./
+      fileNameEncoding: Cp1252
+```
+or with a password:
+```yaml
+    - host: localhost
+      port: 22
+      username: foo
+      password: pass
+      home: ./
+```
+`home` and `fileNameEncoding` fields are optional:
+```yaml
+    - host: localhost
+      port: 22
+      username: foo
+      password: pass
+```
 
 ### Sftp timeouts settings
 

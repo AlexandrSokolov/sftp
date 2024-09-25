@@ -1,0 +1,21 @@
+app:
+# connect via ssh to each sftp hosts, to add host key to `known_hosts`
+  sftp-servers:
+    - host: sftp
+      port: 22
+      username: foo
+      password: pass
+      #home: ./
+
+    - host: sftp2
+      port: 22
+      username: foo
+      # sftp host ssh private key:
+      identity-file: /root/.ssh/id_ed25519_sftp2_container
+      #home: ./
+      fileNameEncoding: Cp1252
+
+    - host: localhost
+      port: 24
+      username: foo
+      password: pass

@@ -1,6 +1,6 @@
 spring:
   config:
-    import: classpath:external.config.yaml
+    import: classpath:sftp.test.config.yaml
 logging:
   level:
     org:

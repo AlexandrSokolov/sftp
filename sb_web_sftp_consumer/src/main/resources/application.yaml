@@ -1,0 +1,26 @@
+resteasy:
+  jaxrs:
+    app:
+      registration: property
+      classes: com.example.sb.sftp.rest.config.JakartaWsConfiguration
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - shutdown
+  endpoint:
+    shutdown:
+      enabled: true
+logging:
+  level:
+    com:
+      example:
+        jakarta_resteasy:
+          rest:
+            service: info
+    org:
+      springframework: info
+      jboss:
+        resteasy: info
