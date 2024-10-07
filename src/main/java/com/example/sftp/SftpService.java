@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.example.sftp.config.SftpConfiguration.DEFAULT_SFTP_HOME;
 import static com.example.sftp.config.SftpConfiguration.KNOWN_HOSTS_PATH;
 
 public class SftpService implements SftpApi {
@@ -273,7 +274,7 @@ public class SftpService implements SftpApi {
         if (entry.getAttrs().isDir()
           && !".".equals(entry.getFilename())
           && !"..".equals(entry.getFilename())) {
-          var subPath = path + "/" + entry.getFilename();
+          var subPath = sftpPath(path, entry.getFilename());
           list.add(subPath);
           accumulateFolders(subPath, list);
         }
@@ -281,6 +282,12 @@ public class SftpService implements SftpApi {
     } catch (SftpException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private String sftpPath(String path, String subPath) {
+    return path.endsWith(DEFAULT_SFTP_HOME)
+      ? path + subPath
+      : path + "/" + subPath;
   }
 
   private static <T> T uncheckCall(Callable<T> callable) {

@@ -20,10 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static com.example.sftp.docker.SftpDockerConstants.*;
 
@@ -96,6 +93,37 @@ public class SftpApiTest {
   }
 
   @Test
+  public void testDirsFromHomeStream() {
+    try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
+      Map<String, List<String>> result = sftpApi.dirsStream(
+          sftpConfiguration.home())
+        .collect(
+          LinkedHashMap::new,
+          (m, v)-> m.put(v.getKey(), v.getValue()),
+          Map::putAll);
+      Assertions.assertEquals(7, result.size());
+      Assertions.assertTrue(result.get(SFTP_HOME_PATH).isEmpty());
+      Assertions.assertEquals(4, result.get(TEST_CONTAINERS_FOLDER).size());
+    }
+  }
+
+  //sometimes, the path can be configured as "./":
+  @Test
+  public void testDirsFromCurrentStream() {
+    try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
+      Map<String, List<String>> result = sftpApi.dirsStream(
+          "./")
+        .collect(
+          LinkedHashMap::new,
+          (m, v)-> m.put(v.getKey(), v.getValue()),
+          Map::putAll);
+      Assertions.assertEquals(7, result.size());
+      Assertions.assertTrue(result.get("." + SFTP_HOME_PATH).isEmpty());
+      Assertions.assertEquals(4, result.get("." + TEST_CONTAINERS_FOLDER).size());
+    }
+  }
+
+  @Test
   public void testFileExists() {
     var filePath = String.format("%s/%s", TEST_CONTAINERS_FOLDER, FILE_NAME);
     try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
@@ -123,7 +151,7 @@ public class SftpApiTest {
     var filePath = String.format("%s/%s", TEST_CONTAINERS_FOLDER, NEW_FILE_NAME);
     try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
       Assertions.assertFalse(sftpApi.fileExists(filePath));
-      try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(FILE_NAME_4_UPLOADING);) {
+      try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(FILE_NAME_4_UPLOADING)) {
         sftpApi.fileUpload(filePath, inputStream);
         Assertions.assertTrue(sftpApi.fileExists(filePath));
       } catch (IOException e) {
@@ -157,6 +185,11 @@ public class SftpApiTest {
       Assertions.assertTrue(sftpApi.dirExists(emptyFolderPath));
       //folder has no files in it
       Assertions.assertTrue(sftpApi.filesStream(emptyFolderPath).toList().isEmpty());
+
+      //delete the created folder, to avoid side effects with the other tests:
+      sftpApi.removeDir(TEST_CONTAINERS_FOLDER + NEW_FOLDER_PATH);
+      sftpApi.removeDir(TEST_CONTAINERS_FOLDER + "/f1/f2");
+      sftpApi.removeDir(TEST_CONTAINERS_FOLDER + "/f1");
     }
   }
 
@@ -165,7 +198,7 @@ public class SftpApiTest {
     var newFolder = SFTP_HOME_PATH + NEW_FOLDER_PATH;
     try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
       var e = Assertions.assertThrows(
-        IllegalStateException.class, () -> { sftpApi.mkdir(newFolder);}
+        IllegalStateException.class, () -> sftpApi.mkdir(newFolder)
       );
       Assertions.assertEquals(
         "Permission denied. Sftp path: '" + newFolder + "' Permissions for existing paths: {/upload=drwxr-xr-x}",
@@ -223,6 +256,9 @@ public class SftpApiTest {
       sftpApi.mvFile(originalFilePath, newFilePath);
       Assertions.assertTrue(sftpApi.fileExists(newFilePath));
       Assertions.assertFalse(sftpApi.fileExists(originalFilePath));
+
+      //to avoid side effects:
+      sftpApi.mvFile(newFilePath, originalFilePath);
     }
   }
 
@@ -236,6 +272,11 @@ public class SftpApiTest {
       sftpApi.mvFile(originalFilePath, newFilePath);
       Assertions.assertTrue(sftpApi.fileExists(newFilePath));
       Assertions.assertFalse(sftpApi.fileExists(originalFilePath));
+
+      //to avoid side effects with the other tests:
+      sftpApi.mvFile(newFilePath, originalFilePath);
+      sftpApi.removeDir(TEST_CONTAINERS_FOLDER + "/new/path");
+      sftpApi.removeDir(TEST_CONTAINERS_FOLDER + "/new");
     }
   }
 
