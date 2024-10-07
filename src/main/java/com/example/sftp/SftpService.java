@@ -182,7 +182,7 @@ public class SftpService implements SftpApi {
   }
 
   @Override
-  public void removeDir(String sftpPath) {
+  public void removeEmptyDir(String sftpPath) {
     try {
       sftpChannel.rmdir(sftpPath);
     } catch (SftpException e) {

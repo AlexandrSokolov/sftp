@@ -187,9 +187,9 @@ public class SftpApiTest {
       Assertions.assertTrue(sftpApi.filesStream(emptyFolderPath).toList().isEmpty());
 
       //delete the created folder, to avoid side effects with the other tests:
-      sftpApi.removeDir(TEST_CONTAINERS_FOLDER + NEW_FOLDER_PATH);
-      sftpApi.removeDir(TEST_CONTAINERS_FOLDER + "/f1/f2");
-      sftpApi.removeDir(TEST_CONTAINERS_FOLDER + "/f1");
+      sftpApi.removeEmptyDir(TEST_CONTAINERS_FOLDER + NEW_FOLDER_PATH);
+      sftpApi.removeEmptyDir(TEST_CONTAINERS_FOLDER + "/f1/f2");
+      sftpApi.removeEmptyDir(TEST_CONTAINERS_FOLDER + "/f1");
     }
   }
 
@@ -220,14 +220,14 @@ public class SftpApiTest {
   }
 
   @Test
-  public void testRemoveDir() {
+  public void testRemoveEmptyDir() {
     var dirPath = String.format("%s%s", TEST_CONTAINERS_FOLDER, "/tmp");
     try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
       Assertions.assertFalse(sftpApi.dirExists(dirPath));
       sftpApi.mkdir(dirPath);
       Assertions.assertTrue(sftpApi.dirExists(dirPath));
 
-      sftpApi.removeDir(dirPath);
+      sftpApi.removeEmptyDir(dirPath);
       Assertions.assertFalse(sftpApi.dirExists(dirPath));
     }
   }
@@ -275,8 +275,8 @@ public class SftpApiTest {
 
       //to avoid side effects with the other tests:
       sftpApi.mvFile(newFilePath, originalFilePath);
-      sftpApi.removeDir(TEST_CONTAINERS_FOLDER + "/new/path");
-      sftpApi.removeDir(TEST_CONTAINERS_FOLDER + "/new");
+      sftpApi.removeEmptyDir(TEST_CONTAINERS_FOLDER + "/new/path");
+      sftpApi.removeEmptyDir(TEST_CONTAINERS_FOLDER + "/new");
     }
   }
 

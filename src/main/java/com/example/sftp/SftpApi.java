@@ -59,7 +59,7 @@ public interface SftpApi extends AutoCloseable {
 
   void remove(String sftpPath);
 
-  void removeDir(String sftpPath);
+  void removeEmptyDir(String sftpPath);
 
   void mvFile(String sourcePath, String destinationPath);
 
