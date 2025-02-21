@@ -223,6 +223,18 @@ For these commands you know in advance the exact sftp path of the file/directory
 
 SFTP protocol does not allow to get MD5 (or other) hash of the file.
 
+It means we download the file from sftp into the memory and calculate md5 on the downloaded file, which can be non-sufficient.
+
+```java
+    try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
+      String md5Hash = sftpApi.md5hash(filePath);
+      Assertions.assertEquals(
+        "c6ba5e6f3b1df6877016e27d4d651a45",
+        md5Hash
+      );
+    }
+```
+
 `jsch` still allows to run commands via ssh, so you could execute `md5sum` linux command to get this hash value,
 passing the real file path to this command.
 

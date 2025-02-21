@@ -5,8 +5,12 @@ import com.jcraft.jsch.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
@@ -223,6 +227,17 @@ public class SftpService implements SftpApi {
       sftpChannel.rename(sourcePath, destinationPath);
     } catch (SftpException e) {
       sftpExceptionHandler(destinationPath, e);
+    }
+  }
+
+  @Override
+  public String md5hash(String sourcePath) {
+    try (InputStream inputStream = fileDownload(sourcePath)) {
+      byte[] data = inputStream.readAllBytes();
+      byte[] hash = MessageDigest.getInstance("MD5").digest(data);
+      return new BigInteger(1, hash).toString(16);
+    } catch (NoSuchAlgorithmException | IOException e) {
+      throw new IllegalStateException(e);
     }
   }
 

@@ -298,6 +298,18 @@ public class SftpApiTest {
   }
 
   @Test
+  public void testMd5Hash() {
+    var filePath = String.format("%s/%s", TEST_CONTAINERS_FOLDER, "testMd5Hash.pdf");
+    try (SftpApi sftpApi = SftpService.instance(sftpConfiguration)) {
+      String md5Hash = sftpApi.md5hash(filePath);
+      Assertions.assertEquals(
+        "c6ba5e6f3b1df6877016e27d4d651a45",
+        md5Hash
+      );
+    }
+  }
+
+  @Test
   public void testSetPermissions() throws SftpException {
     try (SftpService sftpService = (SftpService) SftpService.instance(sftpConfiguration)) {
       //do not close `sftpChannel`, channel will be closed by SftpService.close()

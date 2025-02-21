@@ -65,5 +65,7 @@ public interface SftpApi extends AutoCloseable {
 
   void mvDir(String sourcePath, String destinationPath);
 
+  String md5hash(String sourcePath);
+
   void close();
 }
